@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuarios y Claves - Sistema Coopera</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #16a085 0%, #1abc9c 100%); padding: 20px; min-height: 100vh; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #16a085 0%, #1abc9c 100%); color: white; padding: 30px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 2rem; display: flex; align-items: center; gap: 10px; }
+        .btn-back { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; transition: all 0.3s; }
+        .btn-back:hover { background: white; color: #16a085; }
+        .controls { padding: 20px 30px; background: #f8f9fa; border-bottom: 2px solid #e9ecef; display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
+        .search-box { flex: 1; min-width: 300px; position: relative; }
+        .search-box input { width: 100%; padding: 12px 40px 12px 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; transition: all 0.3s; }
+        .search-box input:focus { outline: none; border-color: #16a085; box-shadow: 0 0 0 3px rgba(22,160,133,0.1); }
+        .search-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #999; }
+        .btn-export { background: #16a085; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.3s; }
+        .btn-export:hover { background: #13866e; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(22,160,133,0.3); }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; padding: 20px 30px; background: #f8f9fa; }
+        .stat-card { background: white; padding: 20px; border-radius: 10px; border-left: 4px solid #16a085; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .stat-label { color: #666; font-size: 0.85rem; margin-bottom: 5px; }
+        .stat-value { color: #333; font-size: 1.8rem; font-weight: bold; }
+        .table-container { padding: 30px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        thead { background: linear-gradient(135deg, #16a085 0%, #1abc9c 100%); color: white; }
+        th { padding: 15px; text-align: left; font-weight: 600; white-space: nowrap; }
+        tbody tr { border-bottom: 1px solid #e9ecef; transition: all 0.2s; }
+        tbody tr:hover { background: #e8fff9; }
+        td { padding: 12px 15px; }
+        .muted { color: #666; }
+        .mono { font-family: Consolas, 'Courier New', monospace; }
+        .btn-small { padding: 4px 8px; border: none; border-radius: 6px; font-size: 0.85rem; cursor: pointer; background: #ecfdf5; color: #0f766e; }
+        .btn-small:hover { background: #d1fae5; }
+        .no-results { text-align: center; padding: 40px; color: #666; font-size: 1.1rem; }
+    </style>
+    <script>
+        function mask(str) {
+            if (!str) return '';
+            if (str.length <= 2) return '••';
+            const visible = str.slice(-2);
+            return '•'.repeat(Math.max(2, str.length - 2)) + visible;
+        }
+    </script>
+    </head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔑 Usuarios y Claves</h1>
+            <a href="/" class="btn-back">← Volver al Menú</a>
+        </div>
+
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 Buscar por N° Socio, RUN, Nombre, Usuario...">
+                <span class="search-icon">🔍</span>
+            </div>
+            <button class="btn-export" onclick="exportToCSV()">📥 Exportar CSV</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-label">Total Usuarios</div>
+                <div class="stat-value" id="totalUsuarios">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Con Clave</div>
+                <div class="stat-value" id="conClave">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Sin Clave</div>
+                <div class="stat-value" id="sinClave">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Socios Únicos</div>
+                <div class="stat-value" id="sociosUnicos">0</div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="usuariosTable">
+                <thead>
+                    <tr>
+                        <th>N° Socio</th>
+                        <th>RUN</th>
+                        <th>Nombre Socio</th>
+                        <th>Usuario</th>
+                        <th>Clave (oculta)</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="u : ${usuarios}">
+                        <td th:text="${u.nroSocio}">1</td>
+                        <td class="mono" th:text="${u.numrunSocio}">11111111-1</td>
+                        <td th:text="${u.nombreSocio}">Nombre Apellido</td>
+                        <td class="mono" th:text="${u.nombreUsuario}">usuario</td>
+                        <td class="mono">
+                            <span class="clave" th:attr="data-real=${u.claveUsuario}">••••••</span>
+                        </td>
+                        <td>
+                            <button class="btn-small" onclick="toggleClave(this)" data-state="hidden">👁️ Mostrar</button>
+                            <button class="btn-small" onclick="editUsuario(this)">✏️ Editar</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div id="noResults" class="no-results" style="display: none;">❌ No se encontraron resultados</div>
+        </div>
+    </div>
+
+    <script>
+        const table = document.getElementById('usuariosTable');
+        const tbody = table.querySelector('tbody');
+        const noResults = document.getElementById('noResults');
+        const searchInput = document.getElementById('searchInput');
+
+        function toggleClave(btn){
+            const row = btn.closest('tr');
+            const span = row.querySelector('.clave');
+            if(!span) return;
+            const real = span.getAttribute('data-real') || '';
+            if(btn.dataset.state === 'shown'){
+                span.textContent = mask(real);
+                btn.textContent = '👁️ Mostrar';
+                btn.dataset.state = 'hidden';
+            } else {
+                span.textContent = real;
+                btn.textContent = '🙈 Ocultar';
+                btn.dataset.state = 'shown';
+            }
+        }
+
+        function performSearch(){
+            const term = (searchInput.value || '').toLowerCase().trim();
+            let visible = 0;
+            Array.from(tbody.rows).forEach(tr => {
+                const text = tr.textContent.toLowerCase();
+                const show = text.includes(term);
+                tr.style.display = show ? '' : 'none';
+                if(show) visible++;
+            });
+            noResults.style.display = visible === 0 ? 'block' : 'none';
+            updateStats();
+        }
+
+        function updateStats(){
+            const rows = Array.from(tbody.rows).filter(r => r.style.display !== 'none');
+            const socios = new Set();
+            let conClave = 0; let sinClave = 0;
+            rows.forEach(r => {
+                const socio = r.cells[0].textContent.trim();
+                const span = r.querySelector('.clave');
+                const real = (span?.getAttribute('data-real') || '').trim();
+                socios.add(socio);
+                if(real) conClave++; else sinClave++;
+                // asegurar que la celda muestre máscara al inicio
+                const toggleBtn = r.querySelector('button.btn-small');
+                if(toggleBtn && toggleBtn.dataset.state !== 'shown' && span){
+                    span.textContent = mask(real);
+                }
+            });
+            document.getElementById('totalUsuarios').textContent = rows.length.toLocaleString('es-CL');
+            document.getElementById('conClave').textContent = conClave.toLocaleString('es-CL');
+            document.getElementById('sinClave').textContent = sinClave.toLocaleString('es-CL');
+            document.getElementById('sociosUnicos').textContent = socios.size.toLocaleString('es-CL');
+        }
+
+        function exportToCSV(){
+            const rows = [['Nro Socio','RUN','Nombre Socio','Usuario','Clave (enmascarada)']];
+            Array.from(tbody.rows).forEach(r => {
+                if(r.style.display === 'none') return; // exporta solo visibles
+                const socio = r.cells[0].textContent.trim();
+                const run = r.cells[1].textContent.trim();
+                const nombre = r.cells[2].textContent.trim();
+                const usuario = r.cells[3].textContent.trim();
+                const span = r.querySelector('.clave');
+                const real = (span?.getAttribute('data-real') || '').trim();
+                rows.push([socio, run, nombre, usuario, mask(real)]);
+            });
+            const csv = rows.map(r => r.map(v => '"' + (v??'') + '"').join(',')).join('\n');
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `usuarios_claves_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+
+        // Inicializa
+        updateStats();
+        searchInput.addEventListener('input', performSearch);
+    </script>
+</body>
+</html>

@@ -4,22 +4,27 @@ import java.io.Serializable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
 import lombok.Data;
+
 @Data
 @Entity
 @Table(name = "PAGO_MENSUAL_CREDITO")
+@IdClass(Pago_Mensual_Credito_Id.class)
 public class Pago_Mensual_Credito implements Serializable {
 	@Id
 	@Column(name = "fecha_proceso", nullable = false, length = 7)
 	private String fechaProceso;
 
+	@Id
 	@Column(name = "nro_socio", nullable = false)
 	private Integer nroSocio;
 
 	@Column(name = "run_socio", nullable = false, length = 12)
 	private String runSocio;
 
+	@Id
 	@Column(name = "nro_solic_credito", nullable = false)
 	private Long nroSolicCredito;
 
@@ -32,6 +37,7 @@ public class Pago_Mensual_Credito implements Serializable {
 	@Column(name = "nro_total_cuotas", nullable = false)
 	private Integer nroTotalCuotas;
 
+	@Id
 	@Column(name = "nro_cuota_mes", nullable = false)
 	private Integer nroCuotaMes;
 

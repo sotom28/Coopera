@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Coopera - Menú Principal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .menu-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .menu-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .menu-card-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+
+        .menu-card-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .menu-card-description {
+            color: #666;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .menu-card.socios {
+            border-top: 5px solid #3498db;
+        }
+
+        .menu-card.pagos {
+            border-top: 5px solid #2ecc71;
+        }
+
+        .menu-card.inversiones {
+            border-top: 5px solid #f39c12;
+        }
+
+        .menu-card.test {
+            border-top: 5px solid #e74c3c;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .menu-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏦 Sistema Coopera</h1>
+            <p>Panel de Administración y Consultas</p>
+        </div>
+
+        <div class="menu-grid">
+            <a href="/panel/socios" class="menu-card socios">
+                <div class="menu-card-icon">👥</div>
+                <div class="menu-card-title">Socios</div>
+                <div class="menu-card-description">
+                    Ver y buscar información de todos los socios registrados en el sistema
+                </div>
+            </a>
+
+            <a href="/panel/pagos" class="menu-card pagos">
+                <div class="menu-card-icon">💳</div>
+                <div class="menu-card-title">Pagos Mensuales</div>
+                <div class="menu-card-description">
+                    Gestionar pagos mensuales de créditos, cuotas y estados de cuenta
+                </div>
+            </a>
+
+            <a href="/panel/inversiones" class="menu-card inversiones">
+                <div class="menu-card-icon">📈</div>
+                <div class="menu-card-title">Inversiones</div>
+                <div class="menu-card-description">
+                    Administrar productos de inversión y ahorros de los socios
+                </div>
+            </a>
+
+            <a href="/panel/movimientos" class="menu-card inversiones">
+                <div class="menu-card-icon">📄</div>
+                <div class="menu-card-title">Movimientos</div>
+                <div class="menu-card-description">
+                    Ver y exportar movimientos de productos de inversión
+                </div>
+            </a>
+
+            <a href="/panel/cuotas" class="menu-card pagos">
+                <div class="menu-card-icon">🧾</div>
+                <div class="menu-card-title">Cuotas de Crédito</div>
+                <div class="menu-card-description">
+                    Detalle de cuotas, pagos y saldos por solicitud de crédito
+                </div>
+            </a>
+
+            <a href="/panel/usuarios" class="menu-card usuarios">
+                <div class="menu-card-icon">🔑</div>
+                <div class="menu-card-title">Usuarios y Claves</div>
+                <div class="menu-card-description">
+                    Consulta de usuarios del sistema asociados a socios (claves enmascaradas)
+                </div>
+            </a>
+
+            <a href="/panel/test" class="menu-card test">
+                <div class="menu-card-icon">🔧</div>
+                <div class="menu-card-title">Pruebas DB</div>
+                <div class="menu-card-description">
+                    Panel de pruebas y verificación de conexión a la base de datos
+                </div>
+            </a>
+        </div>
+
+        <div class="footer">
+            <p>Sistema Coopera v1.0 - Oracle Database 19c</p>
+        </div>
+    </div>
+</body>
+</html>

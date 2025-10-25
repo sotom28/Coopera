@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Movimientos - Coopera</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; margin:0; padding:20px }
+        .container { max-width:1600px; margin:0 auto; background:#fff; border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,.15); overflow:hidden }
+        .header { background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; padding:24px 28px }
+        .header h1 { margin:0 0 6px 0 }
+        .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; padding:18px; background:#fafbfc }
+        .stat { background:#fff; border-radius:10px; padding:16px; box-shadow:0 2px 10px rgba(0,0,0,.06); text-align:center }
+        .stat h3 { margin:0; color:#667eea; font-size:1.8em }
+        .controls { display:flex; gap:10px; padding:16px 18px; align-items:center; flex-wrap:wrap }
+        .controls input { padding:10px 14px; flex:1; min-width:260px; border:2px solid #e0e0e0; border-radius:24px }
+        .btn { padding:10px 16px; border:none; border-radius:24px; font-weight:600; cursor:pointer }
+        .btn-primary { background:linear-gradient(135deg,#667eea,#764ba2); color:#fff }
+        .btn-export { background:#28a745; color:#fff }
+        .table-wrap { padding:18px; overflow:auto }
+        table { width:100%; border-collapse:collapse; background:#fff }
+        thead { background:linear-gradient(135deg,#667eea,#764ba2); color:#fff }
+        th,td { padding:10px 12px; border-bottom:1px solid #eee; white-space:nowrap }
+        tbody tr:hover { background:#f9f9ff }
+        .back { margin-left:auto; color:#fff; text-decoration:none }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div style="display:flex; align-items:center; gap:12px">
+            <h1 style="flex:1">📄 Movimientos</h1>
+            <a href="/" class="back">⬅ Volver</a>
+        </div>
+        <p>Listado de movimientos de productos de inversión</p>
+    </div>
+
+    <div class="stats">
+        <div class="stat">
+            <h3 id="stat-total" th:text="${#lists.size(movimientos)}">0</h3>
+            <div>Total de movimientos</div>
+        </div>
+        <div class="stat">
+            <h3 id="stat-monto">$0</h3>
+            <div>Suma de montos</div>
+        </div>
+        <div class="stat">
+            <h3 id="stat-tipos">0</h3>
+            <div>Tipos de movimiento</div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <input id="search" type="text" placeholder="Buscar por socio, nro mov, tipo, fecha..." oninput="applyFilter()"/>
+        <button class="btn btn-export" onclick="exportCSV()">Exportar CSV</button>
+    </div>
+
+    <div class="table-wrap">
+        <table id="tabla">
+            <thead>
+                <tr>
+                    <th>N° Movimiento</th>
+                    <th>N° Solic Prod</th>
+                    <th>N° Socio</th>
+                    <th>Cód Prod Inv</th>
+                    <th>Fecha Movimiento</th>
+                    <th>Monto Movimiento</th>
+                    <th>Cód Tipo Mov</th>
+                </tr>
+            </thead>
+            <tbody id="tbody" th:remove="all-but-first">
+                <tr th:each="m : ${movimientos}">
+                    <td th:text="${m.nroMovimiento}">1</td>
+                    <td th:text="${m.nroSolicProd}">0</td>
+                    <td th:text="${m.nroSocio}">0</td>
+                    <td th:text="${m.codProdInv}">0</td>
+                    <td th:text="${#dates.format(m.fechaMovimiento,'yyyy-MM-dd')}">2024-01-01</td>
+                    <td th:text="${#numbers.formatInteger(m.montoMovimiento,3,'POINT')}">0</td>
+                    <td th:text="${m.codTipoMov}">0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function parseNumber(n){ if(n==null||n==='') return 0; const v=(n+"").replace(/\./g,'').replace(/\$/g,''); return Number(v)||0; }
+function formatMoney(n){ return new Intl.NumberFormat('es-CL').format(n); }
+
+function applyFilter(){
+  const q = document.getElementById('search').value.toLowerCase();
+  const rows = Array.from(document.querySelectorAll('#tbody tr'));
+  let sum = 0; const tipos = new Set(); let visible=0;
+  rows.forEach(r=>{
+    const text = r.innerText.toLowerCase();
+    const show = text.includes(q);
+    r.style.display = show ? '' : 'none';
+    if(show){
+      visible++;
+      const monto = parseNumber(r.children[5].innerText);
+      sum += monto;
+      tipos.add(r.children[6].innerText.trim());
+    }
+  });
+  document.getElementById('stat-total').innerText = visible;
+  document.getElementById('stat-monto').innerText = '$'+formatMoney(sum);
+  document.getElementById('stat-tipos').innerText = tipos.size;
+}
+
+function exportCSV(){
+  const rows = Array.from(document.querySelectorAll('#tabla tr'))
+    .filter(r=> r.style.display !== 'none')
+    .map(r=> Array.from(r.children).map(td=> '"'+td.innerText.replaceAll('"','""')+'"').join(','));
+  const blob = new Blob([rows.join('\n')], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='movimientos.csv'; a.click(); URL.revokeObjectURL(url);
+}
+
+window.addEventListener('load', applyFilter);
+</script>
+</body>
+</html>

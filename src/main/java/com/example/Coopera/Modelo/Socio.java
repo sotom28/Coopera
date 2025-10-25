@@ -22,7 +22,7 @@ public class Socio {
     private Integer numrun;
 
     @Column(name = "DVRUN")
-    private Long dvrun;
+    private String dvrun;
 
     @Column(name = "PNOMBRE")
     private String Pnombre;

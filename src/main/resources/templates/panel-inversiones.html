@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productos de Inversión - Sistema Coopera</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-back {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .btn-back:hover {
+            background: white;
+            color: #f39c12;
+        }
+
+        .controls {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 40px 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #f39c12;
+            box-shadow: 0 0 0 3px rgba(243,156,18,0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+
+        .btn-export {
+            background: #f39c12;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-export:hover {
+            background: #e67e22;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(243,156,18,0.3);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 20px 30px;
+            background: #f8f9fa;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #f39c12;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            color: #333;
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .table-container {
+            padding: 30px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #e9ecef;
+            transition: all 0.2s;
+        }
+
+        tbody tr:hover {
+            background: #fff8e1;
+        }
+
+        td {
+            padding: 12px 15px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .badge-high {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-low {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .amount {
+            font-weight: bold;
+            color: #f39c12;
+        }
+
+        .product-code {
+            background: #f39c12;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📈 Productos de Inversión - Socios</h1>
+            <a href="/" class="btn-back">← Volver al Menú</a>
+        </div>
+
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 Buscar por N° Socio, N° Solicitud, Código Producto...">
+                <span class="search-icon">🔍</span>
+            </div>
+            <button class="btn-export" onclick="exportToCSV()">📥 Exportar CSV</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-label">Total Inversiones</div>
+                <div class="stat-value" id="totalInversiones">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Monto Total Ahorrado</div>
+                <div class="stat-value" id="montoTotalAhorrado">$0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Ahorro Mensual Promedio</div>
+                <div class="stat-value" id="ahorroPromedio">$0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Socios Únicos</div>
+                <div class="stat-value" id="sociosUnicos">0</div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="inversionesTable">
+                <thead>
+                    <tr>
+                        <th>N° Solicitud</th>
+                        <th>N° Socio</th>
+                        <th>Fecha Solicitud</th>
+                        <th>Código Producto</th>
+                        <th>Ahorro Mínimo Mensual</th>
+                        <th>Día Pago</th>
+                        <th>Monto Total Ahorrado</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="inv : ${inversiones}">
+                        <td th:text="${inv.nroSolicProd}">1</td>
+                        <td th:text="${inv.nroSocio}">1</td>
+                        <td th:text="${#dates.format(inv.fechaSolicProd, 'dd/MM/yyyy')}">01/01/2024</td>
+                        <td>
+                            <span class="product-code" th:text="'PROD-' + ${inv.codProdInv}">PROD-1</span>
+                        </td>
+                        <td class="amount" th:text="'$' + ${#numbers.formatInteger(inv.ahorroMinimoMensual, 0, 'POINT')}">$0</td>
+                        <td th:text="${inv.diaPagoMensual}">1</td>
+                        <td class="amount" th:text="'$' + ${#numbers.formatInteger(inv.montoTotalAhorrado, 0, 'POINT')}">$0</td>
+                        <td>
+                            <span th:if="${inv.montoTotalAhorrado >= 1000000}" class="badge badge-high">Alto</span>
+                            <span th:if="${inv.montoTotalAhorrado >= 100000 and inv.montoTotalAhorrado < 1000000}" class="badge badge-medium">Medio</span>
+                            <span th:if="${inv.montoTotalAhorrado < 100000}" class="badge badge-low">Bajo</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div id="noResults" class="no-results" style="display: none;">
+                ❌ No se encontraron resultados para la búsqueda
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const table = document.getElementById('inversionesTable');
+        const tbody = table.querySelector('tbody');
+        const noResults = document.getElementById('noResults');
+        const allRows = Array.from(tbody.querySelectorAll('tr'));
+
+        // Actualizar estadísticas al cargar
+        updateStats();
+
+        searchInput.addEventListener('input', performSearch);
+
+        function performSearch() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            let visibleCount = 0;
+
+            allRows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+            table.style.display = visibleCount === 0 ? 'none' : 'table';
+        }
+
+        function updateStats() {
+            const rows = tbody.querySelectorAll('tr');
+            let montoTotal = 0;
+            let ahorroTotal = 0;
+            const sociosSet = new Set();
+
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                const socio = cells[1].textContent.trim();
+                const ahorroMensual = parseInt(cells[4].textContent.replace(/[$.,]/g, ''));
+                const montoAhorrado = parseInt(cells[6].textContent.replace(/[$.,]/g, ''));
+
+                sociosSet.add(socio);
+                ahorroTotal += ahorroMensual;
+                montoTotal += montoAhorrado;
+            });
+
+            const totalInv = rows.length;
+            const ahorroPromedio = totalInv > 0 ? Math.round(ahorroTotal / totalInv) : 0;
+
+            document.getElementById('totalInversiones').textContent = totalInv.toLocaleString('es-CL');
+            document.getElementById('montoTotalAhorrado').textContent = '$' + montoTotal.toLocaleString('es-CL');
+            document.getElementById('ahorroPromedio').textContent = '$' + ahorroPromedio.toLocaleString('es-CL');
+            document.getElementById('sociosUnicos').textContent = sociosSet.size.toLocaleString('es-CL');
+        }
+
+        function exportToCSV() {
+            const rows = Array.from(table.querySelectorAll('tr'));
+            const csv = rows.map(row => {
+                const cells = Array.from(row.querySelectorAll('th, td'));
+                return cells.map(cell => {
+                    let text = cell.textContent.trim();
+                    return `"${text}"`;
+                }).join(',');
+            }).join('\n');
+
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `inversiones_socios_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+    </script>
+</body>
+</html>

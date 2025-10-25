@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Cuotas Crédito - Coopera</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:#f4f6f9; margin:0; padding:20px }
+        .container { max-width:1600px; margin:0 auto; background:#fff; border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,.15); overflow:hidden }
+        .header { background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; padding:24px 28px }
+        .header h1 { margin:0 0 6px 0 }
+        .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; padding:18px; background:#fafbfc }
+        .stat { background:#fff; border-radius:10px; padding:16px; box-shadow:0 2px 10px rgba(0,0,0,.06); text-align:center }
+        .stat h3 { margin:0; color:#667eea; font-size:1.8em }
+        .controls { display:flex; gap:10px; padding:16px 18px; align-items:center; flex-wrap:wrap }
+        .controls input { padding:10px 14px; flex:1; min-width:260px; border:2px solid #e0e0e0; border-radius:24px }
+        .btn { padding:10px 16px; border:none; border-radius:24px; font-weight:600; cursor:pointer }
+        .btn-primary { background:linear-gradient(135deg,#667eea,#764ba2); color:#fff }
+        .btn-export { background:#28a745; color:#fff }
+        .table-wrap { padding:18px; overflow:auto }
+        table { width:100%; border-collapse:collapse; background:#fff }
+        thead { background:linear-gradient(135deg,#667eea,#764ba2); color:#fff }
+        th,td { padding:10px 12px; border-bottom:1px solid #eee; white-space:nowrap }
+        tbody tr:hover { background:#f9f9ff }
+        .badge { padding:4px 10px; border-radius:12px; color:#fff; font-size:.85em }
+        .badge.pago { background:#2ecc71 }
+        .badge.pendiente { background:#e67e22 }
+        .back { margin-left:auto; color:#fff; text-decoration:none }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div style="display:flex; align-items:center; gap:12px">
+            <h1 style="flex:1">🧾 Cuotas de Crédito</h1>
+            <a href="/" class="back">⬅ Volver</a>
+        </div>
+        <p>Detalle de cuotas por solicitud de crédito</p>
+    </div>
+
+    <div class="stats">
+        <div class="stat"><h3 id="stat-total" th:text="${#lists.size(cuotas)}">0</h3><div>Total de cuotas</div></div>
+        <div class="stat"><h3 id="stat-pagadas">0</h3><div>Cuotas pagadas</div></div>
+        <div class="stat"><h3 id="stat-pendientes">0</h3><div>Cuotas pendientes</div></div>
+        <div class="stat"><h3 id="stat-monto">$0</h3><div>Monto pagado total</div></div>
+        <div class="stat"><h3 id="stat-saldo">$0</h3><div>Saldo por pagar total</div></div>
+    </div>
+
+    <div class="controls">
+        <input id="search" type="text" placeholder="Buscar por solicitud, cuota, fecha..." oninput="applyFilter()"/>
+        <button class="btn btn-export" onclick="exportCSV()">Exportar CSV</button>
+    </div>
+
+    <div class="table-wrap">
+        <table id="tabla">
+            <thead>
+                <tr>
+                    <th>N° Solic Crédito</th>
+                    <th>N° Cuota</th>
+                    <th>Fecha Vencimiento</th>
+                    <th>Valor Cuota</th>
+                    <th>Fecha Pago</th>
+                    <th>Monto Pagado</th>
+                    <th>Saldo por Pagar</th>
+                    <th>Forma Pago</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody id="tbody" th:remove="all-but-first">
+                <tr th:each="c : ${cuotas}">
+                    <td th:text="${c.nroSolicCredito}">0</td>
+                    <td th:text="${c.nroCuota}">0</td>
+                    <td th:text="${#dates.format(c.fechaVencCuota,'yyyy-MM-dd')}">2024-01-01</td>
+                    <td th:text="${#numbers.formatInteger(c.valorCuota,3,'POINT')}">0</td>
+                    <td th:text="${c.fechaPagoCuota != null ? #dates.format(c.fechaPagoCuota,'yyyy-MM-dd') : ''}"></td>
+                    <td th:text="${#numbers.formatInteger(c.montoPagado,3,'POINT')}">0</td>
+                    <td th:text="${#numbers.formatInteger(c.saldoPorPagar,3,'POINT')}">0</td>
+                    <td th:text="${c.codFormaPago}">0</td>
+                    <td>
+                        <span th:classappend="${c.fechaPagoCuota != null} ? 'badge pago' : 'badge pendiente'"
+                              th:text="${c.fechaPagoCuota != null} ? 'PAGADA' : 'PENDIENTE'">PENDIENTE</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function parseNumber(n){ if(n==null||n==='') return 0; const v=(n+"").replace(/\./g,'').replace(/\$/g,''); return Number(v)||0; }
+function formatMoney(n){ return new Intl.NumberFormat('es-CL').format(n); }
+
+function applyFilter(){
+  const q = document.getElementById('search').value.toLowerCase();
+  const rows = Array.from(document.querySelectorAll('#tbody tr'));
+  let total=0, pagadas=0, pendientes=0, monto=0, saldo=0;
+  rows.forEach(r=>{
+    const text = r.innerText.toLowerCase();
+    const show = text.includes(q);
+    r.style.display = show ? '' : 'none';
+    if(show){
+      total++;
+      const isPagada = r.querySelector('.badge')?.classList.contains('pago');
+      if(isPagada) pagadas++; else pendientes++;
+      monto += parseNumber(r.children[5].innerText);
+      saldo += parseNumber(r.children[6].innerText);
+    }
+  });
+  document.getElementById('stat-total').innerText = total;
+  document.getElementById('stat-pagadas').innerText = pagadas;
+  document.getElementById('stat-pendientes').innerText = pendientes;
+  document.getElementById('stat-monto').innerText = '$'+formatMoney(monto);
+  document.getElementById('stat-saldo').innerText = '$'+formatMoney(saldo);
+}
+
+function exportCSV(){
+  const rows = Array.from(document.querySelectorAll('#tabla tr'))
+    .filter(r=> r.style.display !== 'none')
+    .map(r=> Array.from(r.children).map(td=> '"'+td.innerText.replaceAll('"','""')+'"').join(','));
+  const blob = new Blob([rows.join('\n')], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='cuotas_credito.csv'; a.click(); URL.revokeObjectURL(url);
+}
+
+window.addEventListener('load', applyFilter);
+</script>
+</body>
+</html>

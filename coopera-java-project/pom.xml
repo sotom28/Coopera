@@ -3,6 +3,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.6</version>
+        <relativePath/>
+    </parent>
+
     <groupId>com.coopera</groupId>
     <artifactId>coopera-java-project</artifactId>
     <version>1.0-SNAPSHOT</version>
@@ -12,8 +19,8 @@
     <description>A project for Coopera following the service, controller, and repository model.</description>
 
     <properties>
-        <java.version>11</java.version>
-        <spring.version>2.5.4</spring.version>
+        <java.version>17</java.version>
+        <oracle.driver.version>23.7.0.25.01</oracle.driver.version>
     </properties>
 
     <dependencies>
@@ -25,9 +32,30 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
+        <!-- Oracle JDBC driver -->
         <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc11</artifactId>
+            <version>${oracle.driver.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- Oracle Wallet (TCPS) dependencies -->
+        <dependency>
+            <groupId>com.oracle.database.security</groupId>
+            <artifactId>oraclepki</artifactId>
+            <version>${oracle.driver.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.oracle.database.security</groupId>
+            <artifactId>osdt_core</artifactId>
+            <version>${oracle.driver.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.oracle.database.security</groupId>
+            <artifactId>osdt_cert</artifactId>
+            <version>${oracle.driver.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -46,3 +74,4 @@
         </plugins>
     </build>
 </project>
+winget install --id Apache.Maven -e

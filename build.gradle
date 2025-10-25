@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.6'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'org.openjfx.javafxplugin' version '0.1.0'
 }
 
 group = 'com.example'
@@ -12,6 +13,11 @@ java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(17)
 	}
+}
+
+javafx {
+	version = "21.0.1"
+	modules = ['javafx.controls', 'javafx.fxml']
 }
 
 configurations {
@@ -25,11 +31,22 @@ repositories {
 }
 
 dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-hateoas'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	
+	// JavaFX dependencies
+	implementation 'org.openjfx:javafx-controls:21.0.1'
+	implementation 'org.openjfx:javafx-fxml:21.0.1'
+	
 	compileOnly 'org.projectlombok:lombok'
-	runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
+	// Oracle JDBC driver
+	runtimeOnly 'com.oracle.database.jdbc:ojdbc11:23.7.0.25.01'
+	// Required for Oracle Wallet (TCPS) support
+	runtimeOnly 'com.oracle.database.security:oraclepki:21.9.0.0'
+	runtimeOnly 'com.oracle.database.security:osdt_core:21.9.0.0'
+	runtimeOnly 'com.oracle.database.security:osdt_cert:21.9.0.0'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -37,4 +54,11 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+task runJavaFX(type: JavaExec) {
+	group = 'application'
+	description = 'Run JavaFX application'
+	classpath = sourceSets.main.runtimeClasspath
+	mainClass = 'com.example.Coopera.javafx.CooperaJavaFXApp'
 }

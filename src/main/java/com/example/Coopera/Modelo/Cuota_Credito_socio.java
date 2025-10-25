@@ -4,12 +4,14 @@ import java.io.Serializable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "CUOTA_CREDITO_SOCIO")
+	@IdClass(Cuota_Credito_socio_Id.class)
 @Data
 @NoArgsConstructor
 public class Cuota_Credito_socio implements Serializable {

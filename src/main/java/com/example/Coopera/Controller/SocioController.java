@@ -17,7 +17,7 @@ import com.example.Coopera.Modelo.Socio;
 import com.example.Coopera.Service.SocioService;
 
 @RestController
-@RequestMapping("/api/socios")
+@RequestMapping("/api/v2/socios")
 public class SocioController {
 
     private final SocioService service;
