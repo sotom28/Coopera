@@ -45,7 +45,7 @@ public class PanelViewController {
     
     @GetMapping("/panel/socios")
     public String panelSocios(Model model) {
-        model.addAttribute("socios", socioRepository.findAll());
+        // La vista hará fetch a /api/v2/socios; evitamos cargar datos pesados aquí
         return "panel-socios";
     }
     
